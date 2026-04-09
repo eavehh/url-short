@@ -45,11 +45,6 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		println(body)
-
-		data := RegisterResponse{
-			Token: "123",
-		}
-		res.SendJson(w, data, 200)
+		handler.AuthService.Register(body.Email, body.Name, body.Password)
 	}
 }
