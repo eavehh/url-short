@@ -1,13 +1,12 @@
 package main
 
 import (
-	"os"
-	"os/user"
-	"stepik_1/internal/link"
-
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
+	"stepik_1/internal/link"
+	"stepik_1/internal/user"
 )
 
 func main() {
