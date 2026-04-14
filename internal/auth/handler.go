@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 	"stepik_1/configs"
+	"stepik_1/pkg/jwt"
 	"stepik_1/pkg/req"
 	"stepik_1/pkg/res"
 )
@@ -27,14 +28,26 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		body, err := req.HandleBody[LoginRequest](&w, r)
 		if err != nil {
 			return
 		}
-		println(body)
+
+		email, err := handler.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		data := LoginResponse{
-			Token: "123",
+			Token: token,
 		}
 		res.SendJson(w, data, 200)
 	}
@@ -46,12 +59,23 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		token, err := handler.AuthService.Register(body.Email, body.Name, body.Password)
+
+		email, err := handler.AuthService.Register(body.Email, body.Name, body.Password)
 		if err != nil {
-			res.SendJson(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
-		res.SendJson(w, RegisterResponse{Token: token}, http.StatusCreated)
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := RegisterResponse{
+			Token: token,
+		}
+		res.SendJson(w, data, 200)
 
 	}
 }
