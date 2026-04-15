@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -15,5 +16,6 @@ func Logging(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(wrapper, r)
 		log.Println(wrapper.StatusCode, r.Method, r.URL.Path, time.Since(start))
+		fmt.Println("porno365")
 	})
 }
